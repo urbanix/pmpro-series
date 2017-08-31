@@ -1,18 +1,18 @@
 === PMPro Series ===
-Contributors: strangerstudios
+Contributors: urbanix, strangerstudios
 Tags: series, drip feed, serial, delayed, limited, memberships
 Requires at least: 3.4
 Tested up to: 4.0
 Stable tag: .3.7
 
-Create "Series" which are groups of posts/pages where content is revealed to members over time. This is the "drip feed content" module for Paid Memberships Pro.
+Create "Series" which are groups of posts/pages where content is revealed to members over time. This is the "drip feed content" module for Paid Memberships Pro. Modified to support multiple series with different start dates
 
 == Description ==
-This plugin currently requires Paid Memberships Pro. 
+This plugin currently requires Paid Memberships Pro.
 
 == Installation ==
 
-1. Upload the `pmpro-series` directory to the `/wp-content/plugins/` directory of your site.
+1. Upload the `pmpro-series-multi` directory to the `/wp-content/plugins/` directory of your site.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 1. Navigate to the Series menu in the WordPress dashboard to create a new series.
 1. Add posts to series using the "Posts in this Series" meta box under the post content.
