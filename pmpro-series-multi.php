@@ -269,6 +269,13 @@ add_filter("pmpro_not_logged_in_text_filter", "pmpros_pmpro_text_filter");
       $level_id = $current_membership->id;
 		}
 
+		$composite_series = pmpro_getOption('pmpro_series_multi_level_' . $level_id . '_composite');
+		if(!empty($composite_series))
+		{
+			$composite_levels = explode(',', $composite_series);
+			$level_id = trim($composite_levels[0]);
+		}
+
 		global $pmpro_startdates;	//for cache
 		if(empty($pmpro_startdates[$user_id][$level_id]))
 		{
