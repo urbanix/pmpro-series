@@ -118,8 +118,40 @@ add_filter("the_content", "pmpros_the_content");
 //returns true if a user has access to a page, including logic for series/delays
 function pmpros_hasAccess($user_id, $post_id)
 {
+	global $pmpro_series_multi_user_levels, $pmpro_series_multi_composite_series;
+
+	if(empty($pmpro_series_multi_user_levels))
+		$pmpro_series_multi_user_levels = [];
+	if(!empty($user_id) && empty($pmpro_series_multi_user_levels[$user_id]))
+	{
+		$current_membership = pmpro_getMembershipLevelForUser($user_id);
+		$pmpro_series_multi_user_levels[$user_id] = $current_membership->id;
+	}
+
+	$level_id = $pmpro_series_multi_user_levels[$user_id];
+
+	if(empty($pmpro_series_multi_composite_series))
+		$pmpro_series_multi_composite_series = [];
+
+	if(empty($pmpro_series_multi_composite_series[$level_id]))
+	{
+			$composite_series = pmpro_getOption('pmpro_series_multi_level_' . $level_id. '_composite');
+
+			if(empty($composite_series))
+			{
+				//$pmpro_series_multi_composite_series[$level_id] = [$level_id];
+				$pmpro_series_multi_composite_series[$level_id] = -1;
+			}
+			else
+			{
+				//$pmpro_series_multi_composite_series[$level_id] = explode(',', $composite_series);
+				$pmpro_series_multi_composite_series[$level_id] = 1;
+			}
+	}
+
 	//is this post in a series?
 	$post_series = get_post_meta($post_id, "_post_series", true);
+
 	if(empty($post_series))
 		return true;		//not in a series
 
@@ -137,6 +169,7 @@ function pmpros_hasAccess($user_id, $post_id)
 		}
 		//does the user have access to any of the series pages?
 		$results = pmpro_has_membership_access($series_id, $user_id, true);	//passing true there to get the levels which have access to this page
+
 		if($results[0])	//first item in array is if the user has access
 		{
 			//has the user been around long enough for any of the delays?
@@ -151,7 +184,8 @@ function pmpros_hasAccess($user_id, $post_id)
 						//check specifically for the levels with access to this series
 						foreach($results[1] as $level_id)
 						{
-							if(max(0, series_multi_pmpro_getMemberDays($user_id, $level_id)) >= $sp->delay)
+							if($pmpro_series_multi_composite_series[$level_id] < 0 &&
+								max(0, series_multi_pmpro_getMemberDays($user_id, $level_id)) >= $sp->delay)
 							{
 								return true;	//user has access to this series and has been around longer than this post's delay
 							}
@@ -313,6 +347,7 @@ add_filter("pmpro_not_logged_in_text_filter", "pmpros_pmpro_text_filter");
 		}
 
 		global $pmpro_member_days;
+
 		if(empty($pmpro_member_days[$user_id][$level_id]))
 		{
 			$startdate = series_multi_pmpro_getMemberStartdate($user_id, $level_id);
@@ -322,10 +357,11 @@ add_filter("pmpro_not_logged_in_text_filter", "pmpros_pmpro_text_filter");
 				$pmpro_member_days[$user_id][$level_id] = 0;
 			else
 			{
-				$now = current_time('timestamp');
-				$days = ($now - $startdate)/3600/24;
-
-				$pmpro_member_days[$user_id][$level_id] = $days;
+				$start_format = "Y-m-d H:i:s";
+				$startdatetime = DateTime::createFromFormat($start_format, $startdate);
+				$now = date_create();
+				$days = $startdatetime->diff($now);
+				$pmpro_member_days[$user_id][$level_id] = $days->days;
 			}
 		}
 
